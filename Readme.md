@@ -1,60 +1,94 @@
-# Vai trò: Hãy đóng vai một Senior Fullstack Developer. Xây dựng một ứng dụng đặt vé xem phim đơn giản, tập trung vào cấu trúc Backend chuyên nghiệp và giao diện Frontend tối giản, sạch sẽ.
+# 🎬 CineBook - Ứng Dụng Đặt Vé Xem Phim
 
-## 1. Yêu cầu về Công nghệ:
+Ứng dụng đặt vé xem phim đơn giản, xây dựng theo kiến trúc **MVC** với Node.js/Express backend và giao diện Tailwind CSS.
 
-Backend: Node.js, Express.js.
+## 📁 Cấu trúc thư mục
 
-Database: MongoDB (sử dụng Mongoose).
+```
+Backend/
+├── controllers/
+│   ├── authController.js      # Logic xử lý đăng ký / đăng nhập
+│   ├── movieController.js     # Logic lấy danh sách phim
+│   └── bookingController.js   # Logic đặt vé và xem lịch sử
+├── middleware/
+│   └── auth.js                # Middleware xác thực JWT
+├── models/
+│   ├── User.js                # Schema người dùng (bcrypt hash)
+│   ├── Movie.js               # Schema phim
+│   └── Booking.js             # Schema đặt vé
+├── routes/
+│   ├── authRoutes.js          # POST /api/auth/register, /login
+│   ├── movieRoutes.js         # GET /api/movies, /api/movies/:id
+│   └── bookingRoutes.js       # POST /api/bookings, GET /api/bookings/my
+├── public/
+│   ├── index.html             # Giao diện chính (Tailwind CSS)
+│   └── script.js              # Fetch API, JWT LocalStorage
+├── server.js                  # Entry point, kết nối MongoDB
+├── seedData.js                # Tự động nạp 7 phim mẫu
+├── package.json
+└── .env.example
+```
 
-Xác thực: JWT (JSON Web Token) để quản lý phiên đăng nhập.
+## 🚀 Cài đặt và chạy
 
-Kiến trúc: Tuân thủ nghiêm ngặt mô hình MVC (Models, Views, Controllers) và tách biệt Routes, Middlewares.
+### 1. Cài đặt dependencies
 
-Frontend: HTML/CSS (khuyến khích dùng Tailwind CSS để UI gọn gàng) và Vanilla JS (sử dụng Fetch API để gọi API).
+```bash
+npm install
+```
 
-## 2. Các tính năng chính:
+### 2. Cấu hình biến môi trường
 
-Xác thực người dùng: Đăng ký và Đăng nhập. Sử dụng bcrypt để mã hóa mật khẩu.
+Tạo file `.env` từ `.env.example`:
 
-Middleware bảo mật: Viết một middleware auth.js để kiểm tra JWT. Chỉ người dùng đã đăng nhập mới có thể đặt vé.
+```bash
+cp .env.example .env
+```
 
-Hiển thị phim: Hiển thị danh sách 6-7 bộ phim (Tên, Thể loại, Giá vé, Hình ảnh mẫu).
+Chỉnh sửa `.env` với thông tin của bạn:
 
-Logic Đặt vé: Khi nhấn "Đặt vé", hệ thống sẽ tạo một bản ghi Booking trong MongoDB lưu ID người dùng và ID phim.
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/movie_booking
+JWT_SECRET=your_super_secret_key_here
+```
 
-## 3. Thiết kế RESTful API:
+### 3. Khởi động server
 
-POST /api/auth/register & POST /api/auth/login
+```bash
+# Production
+npm start
 
-GET /api/movies: Lấy danh sách phim.
+# Development (auto-reload)
+npm run dev
+```
 
-POST /api/bookings: Đặt vé (Cần token xác thực).
+Server sẽ tự động nạp **7 phim mẫu** vào database khi khởi động lần đầu.
 
-## 4. Yêu cầu cấu trúc phản hồi (File-by-file):
-Hãy trình bày code theo cấu trúc thư mục rõ ràng:
+Truy cập: **http://localhost:5000**
 
-Sơ đồ thư mục: Hiển thị cách tổ chức các folder controllers, models, routes, middleware, public.
+## 🔌 API Endpoints
 
-Backend:
+| Method | Endpoint             | Mô tả                       | Auth  |
+|--------|----------------------|-----------------------------|-------|
+| POST   | `/api/auth/register` | Đăng ký tài khoản           | ❌     |
+| POST   | `/api/auth/login`    | Đăng nhập, nhận JWT         | ❌     |
+| GET    | `/api/movies`        | Lấy danh sách tất cả phim   | ❌     |
+| GET    | `/api/movies/:id`    | Lấy chi tiết một phim       | ❌     |
+| POST   | `/api/bookings`      | Đặt vé mới                  | ✅ JWT |
+| GET    | `/api/bookings/my`   | Xem lịch sử đặt vé của mình | ✅ JWT |
 
-models/: Định nghĩa Schema cho User, Movie, Booking.
+## 🔐 Xác thực
 
-middleware/auth.js: Logic kiểm tra và giải mã JWT.
+JWT token được trả về sau khi đăng nhập. Gửi token trong header:
 
-controllers/: Viết logic xử lý riêng cho Auth, Movies và Bookings.
+```
+Authorization: Bearer <token>
+```
 
-routes/: Định nghĩa các endpoint sạch sẽ.
+## 🛠 Công nghệ sử dụng
 
-server.js: File chạy chính, kết nối MongoDB và cấu hình Express.
-
-Frontend (Thư mục public):
-
-index.html: Giao diện chính với Navbar và lưới danh sách phim.
-
-script.js: Xử lý gọi API, lưu JWT vào LocalStorage và cập nhật giao diện.
-
-## 5. Ghi chú về phong cách:
-
-Viết code sạch (Clean Code), có comment tiếng Việt giải thích luồng đi của dữ liệu từ Middleware đến Controller.
-
-Tạo một đoạn mã "Seed data" nhỏ để tự động nạp 7 bộ phim mẫu vào Database khi khởi động server lần đầu.
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB, Mongoose
+- **Auth**: JWT, bcryptjs
+- **Frontend**: HTML, Tailwind CSS, Vanilla JS (Fetch API)
