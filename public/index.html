@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CineBook - Đặt Vé Xem Phim</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#e50914',
+              dark: '#141414',
+              card: '#1f1f1f',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #141414;
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+      }
+      .movie-card:hover .overlay {
+        opacity: 1;
+      }
+      .overlay {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .toast {
+        animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
+      }
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to   { transform: translateX(0);   opacity: 1; }
+      }
+      @keyframes fadeOut {
+        to { opacity: 0; transform: translateX(100%); }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+
+    <!-- ============================================================
+         NAVBAR
+    ============================================================ -->
+    <nav class="bg-black/90 backdrop-blur sticky top-0 z-50 shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-primary font-black text-2xl tracking-tight">🎬 CineBook</span>
+        </a>
+
+        <!-- Trạng thái chưa đăng nhập -->
+        <div id="nav-auth" class="flex items-center gap-3">
+          <button
+            id="btn-login"
+            data-action="open-login"
+            class="text-sm text-gray-300 hover:text-white transition"
+          >Đăng nhập</button>
+          <button
+            id="btn-register"
+            data-action="open-register"
+            class="bg-primary hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+          >Đăng ký</button>
+        </div>
+
+        <!-- Trạng thái đã đăng nhập (ẩn mặc định) -->
+        <div id="nav-user" class="hidden items-center gap-4">
+          <button
+            id="btn-my-bookings"
+            data-action="my-bookings"
+            class="text-sm text-gray-300 hover:text-white transition"
+          >📋 Vé của tôi</button>
+          <span class="text-sm text-gray-400">Xin chào, <span id="user-name" class="text-white font-semibold"></span></span>
+          <button
+            id="btn-logout"
+            data-action="logout"
+            class="text-sm text-gray-400 hover:text-red-400 transition"
+          >Đăng xuất</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ============================================================
+         HERO BANNER
+    ============================================================ -->
+    <section class="bg-gradient-to-b from-black via-gray-900 to-dark py-16 text-center px-4">
+      <h1 class="text-4xl md:text-5xl font-black mb-3">
+        Đặt vé <span class="text-primary">ngay hôm nay</span>
+      </h1>
+      <p class="text-gray-400 text-lg">Chọn phim bạn yêu thích và đặt vé trong vài giây</p>
+    </section>
+
+    <!-- ============================================================
+         DANH SÁCH PHIM
+    ============================================================ -->
+    <main class="max-w-7xl mx-auto px-4 py-10">
+      <h2 class="text-2xl font-bold mb-6 border-l-4 border-primary pl-4">Phim Đang Chiếu</h2>
+      <!-- Loading spinner -->
+      <div id="loading" class="flex justify-center py-20">
+        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      <!-- Grid phim -->
+      <div id="movies-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+      <!-- Thông báo lỗi -->
+      <div id="movies-error" class="hidden text-center text-gray-400 py-20">
+        <p class="text-xl">😕 Không thể tải danh sách phim.</p>
+      </div>
+    </main>
+
+    <!-- ============================================================
+         MODAL: Đăng nhập / Đăng ký
+    ============================================================ -->
+    <div id="modal-overlay" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div class="bg-card rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+        <button id="btn-close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
+
+        <!-- Tab chuyển đổi Login / Register -->
+        <div class="flex mb-6 border-b border-gray-700">
+          <button id="tab-login" data-action="switch-login"
+            class="flex-1 py-2 text-sm font-semibold border-b-2 border-primary text-white transition">
+            Đăng Nhập
+          </button>
+          <button id="tab-register" data-action="switch-register"
+            class="flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400 transition">
+            Đăng Ký
+          </button>
+        </div>
+
+        <!-- Form Đăng nhập -->
+        <form id="form-login" class="space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Email</label>
+            <input type="email" id="login-email" required placeholder="example@email.com"
+              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Mật khẩu</label>
+            <input type="password" id="login-password" required placeholder="••••••••"
+              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary" />
+          </div>
+          <div id="login-error" class="hidden text-red-400 text-sm"></div>
+          <button type="submit" id="login-btn"
+            class="w-full bg-primary hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition">
+            Đăng Nhập
+          </button>
+        </form>
+
+        <!-- Form Đăng ký -->
+        <form id="form-register" class="hidden space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Họ tên</label>
+            <input type="text" id="reg-name" required placeholder="Nguyễn Văn A"
+              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Email</label>
+            <input type="email" id="reg-email" required placeholder="example@email.com"
+              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Mật khẩu</label>
+            <input type="password" id="reg-password" required placeholder="••••••••" minlength="6"
+              class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary" />
+          </div>
+          <div id="register-error" class="hidden text-red-400 text-sm"></div>
+          <button type="submit" id="register-btn"
+            class="w-full bg-primary hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition">
+            Tạo Tài Khoản
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: Lịch sử đặt vé
+    ============================================================ -->
+    <div id="booking-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div class="bg-card rounded-2xl shadow-2xl w-full max-w-2xl p-8 relative max-h-[80vh] overflow-y-auto">
+        <button id="btn-close-bookings" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
+        <h2 class="text-xl font-bold mb-6 border-l-4 border-primary pl-3">📋 Vé Đã Đặt</h2>
+        <div id="bookings-list" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         TOAST NOTIFICATION
+    ============================================================ -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] space-y-2"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
