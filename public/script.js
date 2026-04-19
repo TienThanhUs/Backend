@@ -258,6 +258,13 @@ const fetchMovies = async () => {
     // Render từng card phim
     grid.innerHTML = data.data.map((movie) => createMovieCard(movie)).join('');
 
+    // Xử lý lỗi load ảnh bằng event delegation (thay vì inline onerror)
+    grid.querySelectorAll('img[data-fallback]').forEach((img) => {
+      img.addEventListener('error', function () {
+        this.src = this.dataset.fallback;
+      });
+    });
+
     // Dùng event delegation thay vì inline onclick để xử lý click nút đặt vé
     grid.addEventListener('click', (e) => {
       const btn = e.target.closest('.book-btn');
@@ -298,8 +305,8 @@ const createMovieCard = (movie) => {
         <img
           src="${escapeHtml(imageSrc)}"
           alt="${escapeHtml(movie.title)}"
+          data-fallback="https://via.placeholder.com/300x400?text=No+Image"
           class="w-full h-64 object-cover"
-          onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'"
         />
         <!-- Overlay hiện khi hover -->
         <div class="overlay absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -419,8 +426,8 @@ const openMyBookings = async () => {
       return `
         <div class="flex gap-4 bg-gray-800 rounded-xl p-4">
           <img src="${escapeHtml(safeSrc(b.movie.image, 'https://via.placeholder.com/64x80?text=No+Image'))}" alt="${escapeHtml(b.movie.title)}"
-            class="w-16 h-20 object-cover rounded-lg flex-shrink-0"
-            onerror="this.src='https://via.placeholder.com/64x80?text=No+Image'" />
+            data-fallback="https://via.placeholder.com/64x80?text=No+Image"
+            class="w-16 h-20 object-cover rounded-lg flex-shrink-0" />
           <div class="flex-1 min-w-0">
             <h4 class="font-bold truncate">${escapeHtml(b.movie.title)}</h4>
             <p class="text-gray-400 text-xs mt-1">${escapeHtml(b.movie.genre)}</p>
@@ -431,6 +438,13 @@ const openMyBookings = async () => {
         </div>
       `;
     }).join('');
+
+    // Xử lý lỗi load ảnh bằng event listener (thay vì inline onerror)
+    listEl.querySelectorAll('img[data-fallback]').forEach((img) => {
+      img.addEventListener('error', function () {
+        this.src = this.dataset.fallback;
+      });
+    });
   } catch (err) {
     listEl.innerHTML = '<div class="text-center text-red-400 py-8">Lỗi kết nối server</div>';
     console.error('[openMyBookings] Lỗi:', err);
@@ -483,4 +497,22 @@ document.getElementById('booking-modal').addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   updateNavbar(); // Cập nhật trạng thái đăng nhập từ localStorage
   fetchMovies();  // Tải danh sách phim
+
+  // Gắn event listeners cho các nút Navbar thay vì dùng inline onclick
+  document.getElementById('btn-login').addEventListener('click', () => openModal('login'));
+  document.getElementById('btn-register').addEventListener('click', () => openModal('register'));
+  document.getElementById('btn-my-bookings').addEventListener('click', openMyBookings);
+  document.getElementById('btn-logout').addEventListener('click', logout);
+
+  // Gắn event listeners cho các nút đóng modal
+  document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+  document.getElementById('btn-close-bookings').addEventListener('click', closeBookingModal);
+
+  // Gắn event listeners cho tab chuyển đổi trong modal
+  document.getElementById('tab-login').addEventListener('click', () => switchTab('login'));
+  document.getElementById('tab-register').addEventListener('click', () => switchTab('register'));
+
+  // Gắn event listeners cho forms
+  document.getElementById('form-login').addEventListener('submit', handleLogin);
+  document.getElementById('form-register').addEventListener('submit', handleRegister);
 });

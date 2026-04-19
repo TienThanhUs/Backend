@@ -18,9 +18,11 @@ const createBooking = async (req, res) => {
     if (!movieId || !mongoose.Types.ObjectId.isValid(String(movieId))) {
       return res.status(400).json({ message: 'ID phim không hợp lệ' });
     }
+    // Chuyển sang ObjectId để đảm bảo an toàn khi truy vấn DB
+    const safeMovieId = new mongoose.Types.ObjectId(String(movieId));
 
     // Tìm phim theo ID để lấy giá vé
-    const movie = await Movie.findById(movieId);
+    const movie = await Movie.findById(safeMovieId);
     if (!movie) {
       return res.status(404).json({ message: 'Không tìm thấy phim' });
     }
@@ -32,7 +34,7 @@ const createBooking = async (req, res) => {
     // req.user._id được lấy từ protect middleware sau khi giải mã JWT
     const booking = await Booking.create({
       user: req.user._id,
-      movie: movieId,
+      movie: safeMovieId,
       seats,
       totalPrice,
     });

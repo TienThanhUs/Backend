@@ -59,11 +59,13 @@
         <!-- Trạng thái chưa đăng nhập -->
         <div id="nav-auth" class="flex items-center gap-3">
           <button
-            onclick="openModal('login')"
+            id="btn-login"
+            data-action="open-login"
             class="text-sm text-gray-300 hover:text-white transition"
           >Đăng nhập</button>
           <button
-            onclick="openModal('register')"
+            id="btn-register"
+            data-action="open-register"
             class="bg-primary hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
           >Đăng ký</button>
         </div>
@@ -71,12 +73,14 @@
         <!-- Trạng thái đã đăng nhập (ẩn mặc định) -->
         <div id="nav-user" class="hidden items-center gap-4">
           <button
-            onclick="openMyBookings()"
+            id="btn-my-bookings"
+            data-action="my-bookings"
             class="text-sm text-gray-300 hover:text-white transition"
           >📋 Vé của tôi</button>
           <span class="text-sm text-gray-400">Xin chào, <span id="user-name" class="text-white font-semibold"></span></span>
           <button
-            onclick="logout()"
+            id="btn-logout"
+            data-action="logout"
             class="text-sm text-gray-400 hover:text-red-400 transition"
           >Đăng xuất</button>
         </div>
@@ -115,22 +119,22 @@
     ============================================================ -->
     <div id="modal-overlay" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div class="bg-card rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
-        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
+        <button id="btn-close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
 
         <!-- Tab chuyển đổi Login / Register -->
         <div class="flex mb-6 border-b border-gray-700">
-          <button id="tab-login" onclick="switchTab('login')"
+          <button id="tab-login" data-action="switch-login"
             class="flex-1 py-2 text-sm font-semibold border-b-2 border-primary text-white transition">
             Đăng Nhập
           </button>
-          <button id="tab-register" onclick="switchTab('register')"
+          <button id="tab-register" data-action="switch-register"
             class="flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400 transition">
             Đăng Ký
           </button>
         </div>
 
         <!-- Form Đăng nhập -->
-        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+        <form id="form-login" class="space-y-4">
           <div>
             <label class="block text-sm text-gray-400 mb-1">Email</label>
             <input type="email" id="login-email" required placeholder="example@email.com"
@@ -149,7 +153,7 @@
         </form>
 
         <!-- Form Đăng ký -->
-        <form id="form-register" onsubmit="handleRegister(event)" class="hidden space-y-4">
+        <form id="form-register" class="hidden space-y-4">
           <div>
             <label class="block text-sm text-gray-400 mb-1">Họ tên</label>
             <input type="text" id="reg-name" required placeholder="Nguyễn Văn A"
@@ -179,7 +183,7 @@
     ============================================================ -->
     <div id="booking-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div class="bg-card rounded-2xl shadow-2xl w-full max-w-2xl p-8 relative max-h-[80vh] overflow-y-auto">
-        <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
+        <button id="btn-close-bookings" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">✕</button>
         <h2 class="text-xl font-bold mb-6 border-l-4 border-primary pl-3">📋 Vé Đã Đặt</h2>
         <div id="bookings-list" class="space-y-4"></div>
       </div>
